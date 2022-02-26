@@ -10,9 +10,74 @@ Automatic Program Corrector Backend is a RESTful back-end server built with Pyth
 
 ---
 
+## <span id="pynguin">Running [Pynguin](https://github.com/se2p/pynguin) in a docker environment</span>
+
+Prerequisite: have [docker](https://www.docker.com/products/docker-desktop) installed on your machine.
+
+2. Make sure pynguin is in the home directory
+
+   ```bash
+   cd ~
+   git clone https://github.com/se2p/pynguin.git
+   ```
+
+3. Create input, output, and package directories. Create package/package.txt
+
+   ```bash
+   cd ~/pynguin
+   mkdir input output package
+   touch package/package.txt
+   ```
+
+4. Create input, output, and package volumes
+
+   ```bash
+   docker volume create input
+   docker volume create output
+   docker volume create package
+   # run "docker volume ls" to check that volumes got created successfully
+   ```
+
+5. Containerize the app by running the Makefile script
+
+   ```bash
+   make # make docker
+   # OR RUN THE BELOW INSTEAD
+   docker build \
+   	  -t $(IMAGE):$(VERSION) . \
+   	  -f ./docker/Dockerfile --no-cache
+   	  
+   ```
+
+6. Check your docker Image container Tag for Pynguin container
+
+   ```bash
+   docker image ls
+      # output would be something like the below
+   ```
+
+   REPOSITORY   TAG        IMAGE ID       CREATED       SIZE
+   appname      latest     a4962c112cd9   6 days ago    169MB
+   pynguin      <mark style="background-color:#F0EDE5;color:#88B04B">**9ccbdc17**</mark>   203050f9142a   6 days ago    153MB
+   hello-app    latest     518ae29ba4ea   6 days ago    169MB
+   ubuntu       latest     a457a74c9aaa   3 weeks ago   65.6MB
+
+7. Run Pynguin in docker container
+
+   ```bash
+   docker run \
+       -v ~/pynguin/input:/input:ro \
+       -v ~/pynguin/output:/output \
+       -v ~/pynguin/package:/package:ro pynguin:<DOCKER_IMAGE_TAG> --project-path /input \
+       --output-path /output \
+       --module-name PYTHON_FILE_NAME -v
+   ```
+
+---
+
 ### Creating a Virtual Environment
 
-2. Create a virtual environment and activate it by executing the following commands:
+8. Create a virtual environment and activate it by executing the following commands:
 
    ```bash
    cd APC_backend # navigate to project directory
@@ -21,7 +86,7 @@ Automatic Program Corrector Backend is a RESTful back-end server built with Pyth
    source env/bin/activate # activate the virtual environment
    ```
 
-3. To install the required dependencies, execute the following command:
+9. To install the required dependencies, execute the following command:
 
    ```bash
    pip install -r requirements.txt # installs required dependencies
@@ -32,32 +97,34 @@ Automatic Program Corrector Backend is a RESTful back-end server built with Pyth
 
 ### Create required directories
 
-```bash
-mkdir input output
-```
+10. From APC_backend directory, run the following command:
+
+    ```bash
+    mkdir input output
+    ```
 
 ---
 
 ### Setting Up the Database
 
-4. [Download MySQL Community Server and MySQL Workbench](https://dev.mysql.com/downloads/ )
+11. [Download MySQL Community Server and MySQL Workbench](https://dev.mysql.com/downloads/ )
 
-5. Create a root user account. Note down your host name, user, and password
+12. Create a root user account. Note down your host name, user, and password
 
-6. Import the database.sql file from MySQL Workbench Server settings.
+13. Import the database.sql file from MySQL Workbench Server settings.
 
 ---
 
 ### Setting Up the .env file
 
-7. To create .env file to store the server's environment variables, execute the following commands:
+14. To create .env file to store the server's environment variables, execute the following commands:
 
 ```bash
 touch .env # creates .env file
 vim .env # use vim or open the .env file in a code editor 
 ```
 
-8. Set the values for the following host, user, and password keys:
+15. Set the values for the following host, user, and password keys:
 
 ```bash
 host=HOST_NAME # typically host is localhost 
@@ -70,7 +137,7 @@ db=DB_NAME
 
 ### Set the DOCKER_IMAGE_TAG variable in PynguinAPI.sh for Unix Machines (MacOS and Linux Distros)
 
-9. In file PynguinAPI.sh, set the DOCKER_IMAGE_TAG variable to the docker image tag for Pynguin container
+16. In file PynguinAPI.sh, set the DOCKER_IMAGE_TAG variable to the docker image tag for Pynguin container
 
 ```sh
 # ...
@@ -82,7 +149,7 @@ DOCKER_IMAGE_TAG="<PYNGUIN_DOCKER_IMAGE_TAG>"
 
 ### Running the Server
 
-9. To run the app, execute the following command on your terminal:
+17. To run the app, execute the following command on your terminal:
 
    ```bash
    uvicorn main:app --reload # note on this method of running the server. 
@@ -90,15 +157,15 @@ DOCKER_IMAGE_TAG="<PYNGUIN_DOCKER_IMAGE_TAG>"
    # An alternative way is to run the main.py Python file --> python3 main.py
    ```
 
-10. Notes:
+18. Notes:
 
-    - The server automatically runs on **http://localhost:8000** 
+- The server automatically runs on **http://localhost:8000** 
 
-    - To access the API documentation (both documentations provide the same functionaltiy, one might just have a preference): 
+- To access the API documentation (both documentations provide the same functionaltiy, one might just have a preference): 
 
-      a. Swagger API Documentation:  **http://localhost:8000/docs**  
+  a. Swagger API Documentation:  **http://localhost:8000/docs**  
 
-      b. ReDoc Documentation:  **http://localhost:8000/redoc**
+  b. ReDoc Documentation:  **http://localhost:8000/redoc**
 
 ---
 
@@ -125,71 +192,6 @@ DOCKER_IMAGE_TAG="<PYNGUIN_DOCKER_IMAGE_TAG>"
    ```
 
 * note: To call fetch() API from the front-end when testing locally we need to sign our backend with an SSL/TLS certificate marking it secure (https). An easy way to do that is by using ngrok!
-
----
-
-## Running [Pynguin](https://github.com/se2p/pynguin) in a docker environment
-
-Prerequisite: have [docker](https://www.docker.com/products/docker-desktop) installed on your machine.
-
-1. Make sure pynguin is in the home directory
-
-   ```bash
-   cd ~
-   git clone https://github.com/se2p/pynguin.git
-   ```
-
-2. Create input, output, and package directories. Create package/package.txt
-
-   ```bash
-   cd ~/pynguin
-   mkdir input output package
-   touch package/package.txt
-   ```
-
-3. Create input, output, and package volumes
-
-   ```bash
-   docker volume create input
-   docker volume create output
-   docker volume create package
-   # run "docker volume ls" to check that volumes got created successfully
-   ```
-
-4. Containerize the app by running the Makefile script
-
-   ```bash
-   make # make docker
-   # OR RUN THE BELOW INSTEAD
-   docker build \
-   	  -t $(IMAGE):$(VERSION) . \
-   	  -f ./docker/Dockerfile --no-cache
-   	  
-```
-
-5. Check your docker Image container Tag for Pynguin container
-
-   ```bash
-   docker image ls
-   # output would be something like the below
-   ```
-
-   REPOSITORY   TAG        IMAGE ID       CREATED       SIZE
-   appname      latest     a4962c112cd9   6 days ago    169MB
-   pynguin      <mark style="background-color:#F0EDE5;color:#88B04B">**9ccbdc17**</mark>   203050f9142a   6 days ago    153MB
-   hello-app    latest     518ae29ba4ea   6 days ago    169MB
-   ubuntu       latest     a457a74c9aaa   3 weeks ago   65.6MB
-
-6. Run Pynguin in docker container
-
-   ```bash
-   docker run \
-       -v ~/pynguin/input:/input:ro \
-       -v ~/pynguin/output:/output \
-       -v ~/pynguin/package:/package:ro pynguin:<DOCKER_IMAGE_TAG> --project-path /input \
-       --output-path /output \
-       --module-name PYTHON_FILE_NAME -v
-   ```
 
 ---
 

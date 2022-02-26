@@ -10,7 +10,7 @@ app = FastAPI()
 
 @app.get("/")
 def index():
-    return {"msg": "Hello World!"}
+    return {"msg": "Welcome to the Automatic Program Corrector!"}
 
 # @app.post("/file", status_code=status.HTTP_201_CREATED, status_code=status.HTTP_201_CREATED)
 # async def upload_file(file: UploadFile = File(...)):
