@@ -12,17 +12,20 @@ app = FastAPI()
 def index():
     return {"msg": "Hello World!"}
 
-@app.post("/file", status_code=status.HTTP_201_CREATED)
-async def upload_file(file: UploadFile = File(...)):
-    with open(f"input/{file.filename}", "wb") as f:
-        shutil.copyfileobj(file.file, f)
+# @app.post("/file", status_code=status.HTTP_201_CREATED, status_code=status.HTTP_201_CREATED)
+# async def upload_file(file: UploadFile = File(...)):
 
-    return {"msg": "File uploaded successfully"}
+#     with open(f"input/{file.filename}", "wb") as f:
+#         shutil.copyfileobj(file.file, f)
+#     msg = pynguinAPI.run(get_file_name_without_extension(file.filename))
+
+#     return {"msg": "File uploaded successfully"}
+#     # return {"msg": msg}
 
 @app.post("/files")
 async def upload_files(files: List[UploadFile] = File(...), status_code=status.HTTP_201_CREATED):
 
-    msg_list = list()
+    msg_list = []
     for file in files:
         with open(f"input/{file.filename}", "wb") as f:
             shutil.copyfileobj(file.file, f)

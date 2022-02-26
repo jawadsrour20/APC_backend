@@ -68,6 +68,19 @@ db=DB_NAME
 
 ---
 
+### Set the DOCKER_IMAGE_TAG variable in PynguinAPI.sh for Unix Machines (MacOS and Linux Distros)
+
+9. Run the below command 
+
+```sh
+# In file PynguinAPI.sh
+# modify 
+```
+
+
+
+---
+
 ### Running the Server
 
 9. To run the app, execute the following command on your terminal:
@@ -116,7 +129,7 @@ db=DB_NAME
 
 ---
 
-## Running Pynguin in a docker environment
+## Running [Pynguin](https://github.com/se2p/pynguin) in a docker environment
 
 Prerequisite: have [docker](https://www.docker.com/products/docker-desktop) installed on your machine.
 
@@ -152,20 +165,34 @@ Prerequisite: have [docker](https://www.docker.com/products/docker-desktop) inst
    docker build \
    	  -t $(IMAGE):$(VERSION) . \
    	  -f ./docker/Dockerfile --no-cache
+   	  
+```
+
+5. Check your docker Image container Tag for Pynguin container
+
+   ```bash
+   docker image ls
+   # output would be something like the below
    ```
 
-5. Run Pynguin in docker container
+   REPOSITORY   TAG        IMAGE ID       CREATED       SIZE
+   appname      latest     a4962c112cd9   6 days ago    169MB
+   pynguin      <mark style="background-color:#F0EDE5;color:#88B04B">**9ccbdc17**</mark>   203050f9142a   6 days ago    153MB
+   hello-app    latest     518ae29ba4ea   6 days ago    169MB
+   ubuntu       latest     a457a74c9aaa   3 weeks ago   65.6MB
+
+6. Run Pynguin in docker container
 
    ```bash
    docker run \
        -v ~/pynguin/input:/input:ro \
        -v ~/pynguin/output:/output \
-       -v ~/pynguin/package:/package:ro pynguin:9ccbdc17 --project-path /input \
+       -v ~/pynguin/package:/package:ro pynguin:<DOCKER_IMAGE_TAG> --project-path /input \
        --output-path /output \
        --module-name PYTHON_FILE_NAME -v
    ```
 
-   ---
-   
-   
+---
+
+
 
