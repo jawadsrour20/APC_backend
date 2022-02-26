@@ -70,14 +70,13 @@ db=DB_NAME
 
 ### Set the DOCKER_IMAGE_TAG variable in PynguinAPI.sh for Unix Machines (MacOS and Linux Distros)
 
-9. Run the below command 
+9. In file PynguinAPI.sh, set the DOCKER_IMAGE_TAG variable to the docker image tag for Pynguin container
 
 ```sh
-# In file PynguinAPI.sh
-# modify 
+# ...
+DOCKER_IMAGE_TAG="<PYNGUIN_DOCKER_IMAGE_TAG>"
+# ...
 ```
-
-
 
 ---
 
