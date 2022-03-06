@@ -32,7 +32,7 @@ async def upload_files(files: List[UploadFile] = File(...), status_code=status.H
 
         msg_list.append(pynguinAPI.run(file.filename))
         file_tests_dict[file.filename] = pynguinAPI.count_passed_and_failed_test_cases(file.filename)
-    print(file_tests_dict)
+    # print(file_tests_dict)
     return {"msg": "Files uploaded successfully"}
     # return {"msg": msg_list}
 

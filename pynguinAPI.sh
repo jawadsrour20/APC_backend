@@ -3,8 +3,11 @@
 
 # INPUT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# set INPUT_DIR to second argument passed to shell script
 INPUT_DIR=$1
+# set INPUT_DIR to third argument passed to shell script
 OUTPUT_DIR=$2
+# set INPUT_DIR to fourth argument passed to shell script
 MODULE_NAME=$3
 
 # set docker Image Tag accirding to your container version

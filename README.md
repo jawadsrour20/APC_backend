@@ -62,7 +62,7 @@ Prerequisite: have [docker](https://www.docker.com/products/docker-desktop) inst
    hello-app    latest     518ae29ba4ea   6 days ago    169MB
    ubuntu       latest     a457a74c9aaa   3 weeks ago   65.6MB
 
-7. Run Pynguin in docker container
+7. Run Pynguin in docker container ( for testing on our terminal/CMD_PROMPT)
 
    ```bash
    docker run \
