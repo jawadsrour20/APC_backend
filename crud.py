@@ -25,6 +25,14 @@ def get_user_by_username(db: Session, username: str):
 def get_users(db: Session, skip: int = 0, limit: int = 1000):
     return db.query(models.User).offset(skip).limit(limit).all()
 
+def get_students(db: Session):
+    return db.query(models.User).filter(models.User.is_instructor == False).all()
+
+def get_instructor_students(db: Session, instructor_name: str):
+    return db.query(models.User) \
+            .filter(models.User.instructor_name == instructor_name, models.User.is_instructor == False) \
+            .all()
+
 def get_user_id(db: Session, username: str):
     return db.query(models.User.id).filter(models.User.username == username).first()
 
@@ -102,6 +110,31 @@ def get_number_of_overdue_submissions(db: Session, username: str):
     problems = get_problems_with_status(db, username)
     overdue_problems = [problem for problem in problems if problem.is_overdue]
     return len(overdue_problems)
+
+# username = instructor_name
+def get_students_statistics(db: Session, username: str):
+
+    students = get_instructor_students(db, instructor_name=username)
+    statistics = {student.username: [] for student in students}
+
+    records = db.query(models.Grade, models.Problem, models.User) \
+        .filter(models.Grade.student_id == models.User.id) \
+        .filter(models.Grade.problem_id == models.Problem.id) \
+        .filter(models.User.instructor_name == username, ) \
+        .values(models.User.username, models.Problem.title, models.Grade.grade_received, models.Grade.submission_date)
+
+    for record in records:
+        if statistics.get(record[0]) is not None:
+            statistics[record[0]].append({
+                'problem_title': record[1],
+                'grade_received': record[2],
+                'submission_date': record[3]
+            })
+    for student in statistics:
+        statistics[student].append({"average_grade": get_average_grade(db, student)})
+
+    return statistics
+
 
 ## Database READ functions END
 
