@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, status, HTTPException, Depends, Body
+from fastapi import FastAPI, UploadFile, File, status, HTTPException, Depends, Body, Form
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 from typing import List, Optional
@@ -12,6 +12,7 @@ from database import SessionLocal, engine
 from sqlalchemy.orm import Session
 import crud, models, schemas
 import utils
+from datetime import datetime
 # Create Database Tables
 models.Base.metadata.create_all(bind=engine)
 
@@ -124,28 +125,54 @@ def submit_problem(problem_id: int, file: UploadFile = File(...), user_info=Depe
 
     return crud.add_grade(db=db, grade=grade)
 
-@app.get("questions", status_code=HTTP_STATUS_CODE_OK)
+@app.get("/questions", status_code=HTTP_STATUS_CODE_OK)
 def available_questions(user_info=Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
-    questions = crud.get_problems(db)
 
+    if not user_info["is_instructor"]:
+        raise HTTPException(status_code=HTTP_STATUS_CODE_FORBIDDEN,
+            detail="You are Un-authorized to access this page. Only instructors can have access.")
+
+    questions = crud.get_problems(db)
     return {"questions": questions,
             "username": user_info["username"],
             "name": user_info["name"],
             }
 
-@app.post("questions/{question_id}", status_code=HTTP_STATUS_CODE_CREATED)
-def add_question(file: UploadFile = File(...), 
+@app.get("/questions/{question_id}", status_code=HTTP_STATUS_CODE_OK)
+def available_question(question_id: int, user_info=Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+    if not user_info["is_instructor"]:
+        raise HTTPException(status_code=HTTP_STATUS_CODE_FORBIDDEN,
+                detail="You are Un-authorized to access this page. Only instructors can have access.")
+
+    question = crud.get_problem(db, question_id)
+    return {"question": question }
+
+
+# Note: we can't use JSON object + UploadFile in the same API.
+# Altenratively, we can use Form() with UploadFile
+@app.post("/questions", status_code=HTTP_STATUS_CODE_CREATED)
+def add_question(problem_title: str = Form(...), problem_description: str = Form(...),
+                 due_date: datetime = Form(...), file: UploadFile = File(...),
                  user_info=Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
 
-    file_tests_dict = dict()
+    if not user_info["is_instructor"]:
+        raise HTTPException(status_code=HTTP_STATUS_CODE_FORBIDDEN,
+                detail="You are Un-authorized to access this page. Only instructors can have access.")
 
     with open(f"input/{file.filename}", "wb") as f:
             shutil.copyfileobj(file.file, f)
 
-    msg = [pynguinAPI.run(file.filename)]
-    file_tests_dict[file.filename] = pynguinAPI.count_passed_and_failed_test_cases(file.filename)
+    function_prototype = utils.get_function_prototype("input", file.filename)
 
-    return {"msg" : msg}
+    problem = schemas.ProblemCreate(title=problem_title, description=problem_description,
+                function_prototype=function_prototype, due_date=due_date, file_name=file.filename)
+
+    crud.add_problem(db=db, problem=problem)
+
+    msg = [pynguinAPI.run(file.filename)]
+    file_tests_dict = {file.filename: pynguinAPI.count_passed_and_failed_test_cases(file.filename)}
+
+    return {"file_tests_dict" : file_tests_dict}
 
 @app.get("/submissions-dashboard", status_code=HTTP_STATUS_CODE_OK)
 def submissions_dashboard(user_info=Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):

@@ -27,3 +27,16 @@ def create_folder(folder_name):
         print("Directory ", folder_name, " created.")
     except FileExistsError:
         print("Directory " , folder_name ,  " already exists")
+
+
+def get_function_prototype(directory, file_name):
+
+    function_prototype = None
+    with open(f"{directory}/{file_name}", "r") as f:
+        for line in f:
+            if line.startswith("def"):
+                function_prototype = line
+                break
+    # returns None if File does not contain a function
+    return function_prototype
+

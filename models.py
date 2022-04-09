@@ -29,7 +29,7 @@ class Problem(Base):
     __tablename__ = "problems"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(255), index=True)
+    title = Column(String(255), unique=True, index=True)
     description = Column(Text(5000), index=True)
     function_prototype = Column(String(255), index=True)
     file_name = Column(String(255), index=True)

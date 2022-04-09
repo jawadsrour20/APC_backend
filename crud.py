@@ -155,12 +155,12 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user) # refresh instance so that it contains any new data from the database, like the generated ID
     return HTTP_STATUS_CODE_CREATED
 
-def add_problem(db: Session, problem: schemas.ProblemCreate, file_name, function_prototype):
+def add_problem(db: Session, problem: schemas.ProblemCreate):
 
     # SQLAlchemy model object/instance
     db_problem = models.Problem(title=problem.title, description=problem.description,
-                                function_prototype=function_prototype, file_name=file_name,
-                                due_date=problem.due_date)
+                    function_prototype=problem.function_prototype, file_name=problem.file_name,
+                    due_date=problem.due_date)
     db.add(db_problem)
     db.commit()
     db.refresh(db_problem)
