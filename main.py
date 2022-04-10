@@ -148,6 +148,16 @@ def available_question(question_id: int, user_info=Depends(auth_handler.auth_wra
     return {"question": question }
 
 
+@app.delete("/questions/{question_id}", status_code=HTTP_STATUS_CODE_OK)
+def delete_question(question_id: int, user_info=Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+    if not user_info["is_instructor"]:
+        raise HTTPException(status_code=HTTP_STATUS_CODE_FORBIDDEN,
+                detail="You are Un-authorized to access this page. Only instructors can have access.")
+
+    is_deleted = crud.delete_problem(db, question_id)
+    return {"is_deleted": is_deleted }
+
+
 # Note: we can't use JSON object + UploadFile in the same API.
 # Altenratively, we can use Form() with UploadFile
 @app.post("/questions", status_code=HTTP_STATUS_CODE_CREATED)

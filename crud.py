@@ -2,6 +2,7 @@
 # Note: CRUD Stands for Create, Read, Update, and Delete.
 
 from sqlalchemy.orm import Session
+from enum import Enum
 
 import models, schemas
 import datetime
@@ -177,3 +178,26 @@ def add_grade(db: Session, grade: schemas.GradeCreate):
     return HTTP_STATUS_CODE_CREATED
 
 ## Database CREATE functions END
+
+
+## Database DELETE functions START
+
+class eProblemState(Enum):
+    NOT_SOLVED = 0
+    SOLVED = 1
+
+def delete_problem(db: Session, problem_id: int):
+
+    attempted_problems = db.query(models.Grade).filter(models.Grade.problem_id == problem_id).all()
+
+    # can't delete problem if it was already attempted
+    if (len(attempted_problems) > 0):
+        return (False, eProblemState.SOLVED)
+
+    result = db.query(models.Problem).filter(models.Problem.id == problem_id).delete()
+    db.commit() # persist the changes to the database
+    return (result == 1, eProblemState.NOT_SOLVED) # result == 1 means deleted successfully
+
+
+
+## Database DELETE functions END
