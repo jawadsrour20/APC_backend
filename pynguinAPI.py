@@ -149,4 +149,7 @@ def generate_data_set(file_name, number_of_test_cases):
         function3: [],
         }
 
-generate_data_set("speed_at_intersection.py", 10)
+
+if __name__ == "__main__":
+    number_of_data_set_test_cases = 10
+    generate_data_set("speed_at_intersection.py", number_of_data_set_test_cases)

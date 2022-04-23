@@ -210,6 +210,10 @@ def submissions_dashboard(user_info=Depends(auth_handler.auth_wrapper), db: Sess
 #     # return {"msg": msg_list}
 
 
+@app.post('/data_set', status_code=HTTP_STATUS_CODE_CREATED)
+def generate_data_set(number_of_test_cases: int = Form(...)):
+    pynguinAPI.generate_data_set("speed_at_intersection.py", number_of_test_cases)
+    return {"msg": "Data set generated successfully"}
 
 if __name__ == '__main__':
     server.run(app, host='127.0.0.1', port=8000)
