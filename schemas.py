@@ -39,6 +39,7 @@ class ProblemBase(BaseModel):
     description: str
     function_prototype: str
     file_name: str
+    difficulty: str
     due_date: datetime.datetime # in request, responses, will be represented as str
 
 class ProblemCreate(ProblemBase):

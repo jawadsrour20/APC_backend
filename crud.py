@@ -161,7 +161,7 @@ def add_problem(db: Session, problem: schemas.ProblemCreate):
     # SQLAlchemy model object/instance
     db_problem = models.Problem(title=problem.title, description=problem.description,
                     function_prototype=problem.function_prototype, file_name=problem.file_name,
-                    due_date=problem.due_date)
+                    difficulty=problem.difficulty, due_date=problem.due_date)
     db.add(db_problem)
     db.commit()
     db.refresh(db_problem)
@@ -171,7 +171,7 @@ def add_grade(db: Session, grade: schemas.GradeCreate):
     # SQLAlchemy model object/instance
     db_grade = models.Grade(student_id=grade.student_id, problem_id=grade.problem_id,
                             test_cases_passed=grade.test_cases_passed, test_cases_failed=grade.test_cases_failed,
-                            grade_received=grade.grade_received)
+                            grade_received=grade.grade_received, submission_date=grade.submission_date)
     db.add(db_grade)
     db.commit()
     db.refresh(db_grade)
@@ -186,17 +186,22 @@ class eProblemState(Enum):
     NOT_SOLVED = 0
     SOLVED = 1
 
+problem_status = {
+    eProblemState.SOLVED: 'SOLVED',
+    eProblemState.NOT_SOLVED: 'NOT_SOLVED',
+}
+
 def delete_problem(db: Session, problem_id: int):
 
     attempted_problems = db.query(models.Grade).filter(models.Grade.problem_id == problem_id).all()
 
     # can't delete problem if it was already attempted
     if (len(attempted_problems) > 0):
-        return (False, eProblemState.SOLVED)
+        return (False, problem_status.get(eProblemState.SOLVED))
 
     result = db.query(models.Problem).filter(models.Problem.id == problem_id).delete()
     db.commit() # persist the changes to the database
-    return (result == 1, eProblemState.NOT_SOLVED) # result == 1 means deleted successfully
+    return (result == 1, problem_status.get(eProblemState.NOT_SOLVED)) # result == 1 means deleted successfully
 
 
 

@@ -1,10 +1,12 @@
 from fastapi import FastAPI, UploadFile, File, status, HTTPException, Depends, Body, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 import shutil
 from typing import List, Optional
 import uvicorn as server
-import pynguinAPI
+import os
 
+import pynguinAPI
 from auth import auth_handler
 from cors import *
 from http_status_codes import *
@@ -33,7 +35,8 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    # allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,7 +59,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
     # create a submissions folder for the new student upon registration
     utils.create_folder(user.username)
-    
+
     return crud.create_user(db=db, user=user)
 
 @app.post("/login")
@@ -112,16 +115,34 @@ def submit_problem(problem_id: int, file: UploadFile = File(...), user_info=Depe
     problem = crud.get_problem(db, problem_id)
     problem_name = utils.get_file_name_without_extension(problem.file_name)
     test_cases_file_name = f"test_{problem_name}.py"
+    test_cases_file_path = f"./output/{test_cases_file_name}"
+    student_test_cases_file_path = f"submissions/{username}/{test_cases_file_name}"
 
-    with open(f"submissions/{username}/{file.filename}", "wb") as f:
+    with open(f"submissions/{username}/{problem_name}.py", "wb") as f:
         shutil.copyfileobj(file.file, f)
 
+    with open(student_test_cases_file_path, "wb") as f:
+        shutil.copyfile(test_cases_file_path,student_test_cases_file_path)
+
+    number_of_test_cases = utils.count_test_cases(test_cases_file_path)
+    with open(f"submissions/{username}/{test_cases_file_name}", 'a') as f:
+            f.write("\ncount_passed_test_cases = 0\n")
+            for test_case_index in range(number_of_test_cases):
+                f.write("try:\n\t")
+                f.write(f"test_case_{test_case_index}()\n\t")
+                f.write("count_passed_test_cases += 1\n")
+                f.write("except Exception:\n\tpass\n")
+            f.write("print(count_passed_test_cases)")
+
+    number_of_passed_test_cases = int(utils.evaluate_passed_test_cases(student_test_cases_file_path))
+    number_of_failed_test_cases = number_of_test_cases - number_of_passed_test_cases
+    grade_received = (number_of_passed_test_cases / number_of_test_cases) * 100
     # compare against pynguin test cases for the problem
     # assign grade to submission + test cases passed + test cases failed
-    # store in database the results
+
     grade = schemas.GradeCreate(student_id=student_id, problem_id=problem_id,
-                            test_cases_passed=0, test_cases_failed=0,
-                            grade_received=0)
+                            test_cases_passed=number_of_passed_test_cases, test_cases_failed=number_of_failed_test_cases,
+                            grade_received=grade_received, submission_date=datetime.now())
 
     return crud.add_grade(db=db, grade=grade)
 
@@ -172,10 +193,14 @@ def add_question(problem_title: str = Form(...), problem_description: str = Form
     with open(f"input/{file.filename}", "wb") as f:
             shutil.copyfileobj(file.file, f)
 
+
+    # Problem difficulty is evaluated using the radon halstead metrics
+    difficulty = utils.get_problem_difficulty(file.filename)
+
     function_prototype = utils.get_function_prototype("input", file.filename)
 
     problem = schemas.ProblemCreate(title=problem_title, description=problem_description,
-                function_prototype=function_prototype, due_date=due_date, file_name=file.filename)
+                function_prototype=function_prototype, due_date=due_date, file_name=file.filename, difficulty=difficulty)
 
     crud.add_problem(db=db, problem=problem)
 
@@ -210,10 +235,13 @@ def submissions_dashboard(user_info=Depends(auth_handler.auth_wrapper), db: Sess
 #     # return {"msg": msg_list}
 
 
-@app.post('/data_set', status_code=HTTP_STATUS_CODE_CREATED)
-def generate_data_set(number_of_test_cases: int = Form(...)):
+data_set_file = 'speed_at_intersection.xlsx'
+data_set_path = f'{os.getcwd()}/integration/{data_set_file}'
+
+@app.post('/data_set', response_class=FileResponse, status_code=HTTP_STATUS_CODE_CREATED)
+async def generate_data_set(number_of_test_cases: int = Form(...)):
     pynguinAPI.generate_data_set("speed_at_intersection.py", number_of_test_cases)
-    return {"msg": "Data set generated successfully"}
+    return FileResponse(path=data_set_path, filename=data_set_file, media_type='application/octet-stream')
 
 if __name__ == '__main__':
     server.run(app, host='127.0.0.1', port=8000)

@@ -43,23 +43,12 @@ def run_windows(module_name):
     pass
 
 
-def count_test_cases(file_path):
-
-    if not os.path.exists(file_path):
-        return 0
-    counter = 0
-    with open(file_path, 'r') as f:
-        for line in f:
-            if line.startswith("def"):
-                counter += 1
-    return counter
-
 def count_test_cases_passed(module_name):
     assert not module_name.endswith(FILE_EXTENSION)
     passed_test_cases_file = (
         f'{RELATIVE_OUTPUT_DIR}/{TEST_MODULE_PREFIX}{module_name}{FILE_EXTENSION}'
     )
-    return count_test_cases(passed_test_cases_file)
+    return utils.count_test_cases(passed_test_cases_file)
 
 
 def count_test_cases_failed(module_name):
@@ -67,7 +56,7 @@ def count_test_cases_failed(module_name):
     failed_test_cases_file = (
         f'{RELATIVE_OUTPUT_DIR}/{TEST_MODULE_PREFIX}{module_name}{TEST_MODULE_FAILING_POSTFIX}{FILE_EXTENSION}'
     )
-    return count_test_cases(failed_test_cases_file)
+    return utils.count_test_cases(failed_test_cases_file)
 
 def count_passed_and_failed_test_cases(file_name):
     module_name = utils.get_file_name_without_extension(file_name)
@@ -86,7 +75,7 @@ def generate_data_set(file_name, number_of_test_cases):
 
     while (remaining_test_cases > 0):
 
-        # generate test cases
+        # generate test cases using Pynguin
         run(file_name)
 
         # parse the test cases file and retrieve the input parameters for each function

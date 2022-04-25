@@ -33,6 +33,7 @@ class Problem(Base):
     description = Column(Text(5000), index=True)
     function_prototype = Column(String(255), index=True)
     file_name = Column(String(255), index=True)
+    difficulty = Column(String(255), index=True)
     due_date = Column(DateTime, index=True)
 
 class Grade(Base):
